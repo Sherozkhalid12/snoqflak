@@ -1,0 +1,12 @@
+# Python dependencies for Snowflake data pipeline
+snowflake-connector-python>=3.0.0
+snowflake-sqlalchemy>=1.4.0
+pyyaml>=6.0
+pandas>=2.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+schedule>=1.2.0
+boto3>=1.28.0  # For S3 integration if needed
+azure-storage-blob>=12.19.0  # For Azure integration if needed
+google-cloud-storage>=2.10.0  # For GCS integration if needed
+

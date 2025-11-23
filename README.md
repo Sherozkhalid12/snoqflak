@@ -285,6 +285,52 @@ WHERE WAREHOUSE_NAME = 'DATA_PIPELINE_WH'
 GROUP BY WAREHOUSE_NAME;
 ```
 
+## 🧪 Testing
+
+### Quick Test
+
+Run the automated test suite to verify everything is working:
+
+```bash
+python scripts/test/test_pipeline.py
+```
+
+This comprehensive test checks:
+- ✅ Snowflake connection
+- ✅ Warehouse configuration (auto-suspend/resume)
+- ✅ Database and schemas
+- ✅ File formats and stages
+- ✅ Snowpipe setup
+- ✅ Stored procedures
+- ✅ Validation tables
+- ✅ Tasks
+- ✅ End-to-end pipeline
+
+### Manual Testing
+
+See `docs/TESTING_GUIDE.md` for detailed step-by-step testing instructions.
+
+### Test File Ingestion
+
+```bash
+# Upload sample file
+python scripts/ingestion/file_ingestion.py sample_data/sample.csv --stage FILE_STAGE
+```
+
+### Test API Ingestion
+
+```bash
+# Test all configured endpoints
+python scripts/ingestion/api_ingestion.py --all
+```
+
+### Test Full Pipeline
+
+```bash
+# Run end-to-end pipeline
+python scripts/orchestration/pipeline_orchestrator.py --step all
+```
+
 ## 🔍 Validation Framework
 
 ### Built-in Validations

@@ -1,0 +1,152 @@
+# Snowflake Pipeline Configuration
+# Update these values with your Snowflake account details
+
+snowflake:
+  account: "your_account_identifier"
+  user: "your_username"
+  password: "your_password"  # Consider using environment variables or keyring
+  warehouse: "DATA_PIPELINE_WH"
+  database: "DATA_PIPELINE_DB"
+  schema: "RAW"
+  role: "ACCOUNTADMIN"  # Adjust based on your security model
+  
+  # Warehouse configuration
+  warehouse_config:
+    size: "SMALL"  # X-SMALL, SMALL, MEDIUM, LARGE, X-LARGE, etc.
+    auto_suspend: 60  # seconds
+    auto_resume: true
+    initially_suspended: true
+    comment: "Data pipeline warehouse with auto-suspend enabled"
+
+# File ingestion configuration
+file_ingestion:
+  # External stage configuration (S3, Azure, GCS)
+  stage_type: "S3"  # S3, AZURE, GCS
+  stage_name: "FILE_STAGE"
+  
+  # S3 Configuration (if using S3)
+  s3:
+    bucket: "your-s3-bucket"
+    prefix: "data/raw/"
+    aws_access_key_id: ""  # Use environment variables
+    aws_secret_access_key: ""  # Use environment variables
+    aws_role_arn: ""  # Preferred: IAM role ARN
+  
+  # Snowpipe configuration
+  snowpipe:
+    enabled: true
+    pipe_name: "FILE_INGESTION_PIPE"
+    auto_ingest: true  # Requires S3 event notifications
+    error_integration: "SNOWPIPE_ERROR_INTEGRATION"
+  
+  # File formats
+  formats:
+    csv:
+      name: "CSV_FORMAT"
+      type: "CSV"
+      field_delimiter: ","
+      record_delimiter: "\n"
+      skip_header: 1
+      error_on_column_count_mismatch: false
+      empty_field_as_null: true
+      compression: "AUTO"
+    
+    parquet:
+      name: "PARQUET_FORMAT"
+      type: "PARQUET"
+      compression: "AUTO"
+
+# API ingestion configuration
+api_ingestion:
+  # API endpoints configuration
+  endpoints:
+    - name: "public_api_example"
+      url: "https://api.example.com/data"
+      method: "GET"
+      auth_type: "none"  # none, bearer, api_key, basic
+      headers: {}
+      params: {}
+      target_table: "RAW.PUBLIC_API_DATA"
+      schedule: "0 */6 * * *"  # Every 6 hours (cron format)
+      enabled: true
+    
+    - name: "private_api_example"
+      url: "https://api.private.com/data"
+      method: "GET"
+      auth_type: "bearer"
+      bearer_token: ""  # Use environment variable
+      headers:
+        Accept: "application/json"
+      params: {}
+      target_table: "RAW.PRIVATE_API_DATA"
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      enabled: true
+  
+  # Rate limiting
+  rate_limit:
+    requests_per_second: 10
+    retry_attempts: 3
+    retry_delay: 5  # seconds
+
+# Transformation configuration
+transformation:
+  source_schema: "RAW"
+  target_schema: "CLEANED"
+  final_schema: "ANALYTICS"
+  
+  # Transformation rules
+  cleaning_rules:
+    remove_duplicates: true
+    handle_null_values: true
+    trim_whitespace: true
+    standardize_dates: true
+    validate_data_types: true
+  
+  # Business logic transforms
+  business_rules:
+    - name: "calculate_derived_fields"
+      enabled: true
+    - name: "apply_business_validations"
+      enabled: true
+
+# Validation configuration
+validation:
+  enabled: true
+  schema: "VALIDATION"
+  
+  checks:
+    - name: "row_count_check"
+      type: "threshold"
+      threshold_min: 0
+      threshold_max: null
+      enabled: true
+    
+    - name: "null_check"
+      columns: []  # Specify columns to check
+      threshold_percent: 10  # Fail if >10% nulls
+      enabled: true
+    
+    - name: "data_freshness_check"
+      max_age_hours: 24
+      enabled: true
+    
+    - name: "referential_integrity"
+      enabled: false  # Enable when you have foreign keys
+
+# Performance optimization
+performance:
+  clustering:
+    enabled: true
+    tables: []  # Specify tables to cluster
+  
+  result_cache:
+    enabled: true
+  
+  query_timeout: 3600  # seconds
+
+# Monitoring and logging
+monitoring:
+  log_table: "VALIDATION.PIPELINE_LOGS"
+  alert_on_failure: true
+  alert_email: ""  # Configure for notifications
+
